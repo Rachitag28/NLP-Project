@@ -1,5 +1,7 @@
 import csv
 import string
+from afinn import Afinn
+afinn = Afinn()
 
 '''A function to map slangs with their correct forms'''
 '''Input: Slangs.csv'''
@@ -23,25 +25,18 @@ Slang_vocab = Slang_Remove('Slangs.csv',Slang,Meaning)
 
 """Tweet filter is used for separating tweet_id, tweet, target and label from the trial data"""
 
-def tweet_filter(filename,tweet_id,target,tweet,label):
+def tweet_filter(filename,tweet_id,tweet):
     with open(filename, 'r') as f:
         reader = csv.reader(f, delimiter=',')
         for row in reader:
             tweet_id.append(row[0])
-            target.append(row[1])
-            tweet.append(row[2])
-            label.append(row[3])
+            tweet.append(row[1].lower)
     tweet_id = [a.strip(' ') for a in tweet_id]
-    target = [b.strip(' ') for b in target]
-    tweet = [c.strip(' ') for c in tweet]
-    label = [d.strip(' ') for d in label]
-
+    tweet = [b.strip(' ') for b in tweet]
 
 tweet_id = []
 tweet = []
-target = []
-label = []
-tweet_filter('Trial.csv', tweet_id, target, tweet, label)
+tweet_filter('TaskB_trial.csv', tweet_id, tweet)
 
 """tweet filter ends"""
 
@@ -135,7 +130,34 @@ for s in tweet3:
     Final_tweet.write('\n')
 
 """Slangs Removed"""
+Final_tweet.close()
+""" Creating new list of tweets to remove slangs """
+tweet5 = []
+with open("Final_tweet.txt", 'r') as f:
+    reader = csv.reader(f, delimiter = '\n')
+    for row in reader:
+        tweet5.append(row[0])
+
+
+'''Computing sentiments of each tweet'''
+filename = "Final_tweet.txt"
+scored_sentences = []
+with open(filename, 'r') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        scored_sentences.append(str((afinn.score(row[0]))))
+print(scored_sentences)
+
+'''End of sentiment'''
+
+tweet_label = open('final_senti.txt', 'w')
+for f in zip(tweet5,scored_sentences):
+    tweet_label.write(f[0] + ',' + f[1])
+    tweet_label.write('\n')
+""" List created """
+
 Corpus.close()
 Clean_tweet.close()
 Correct_tweet.close()
 Final_tweet.close()
+tweet_label.close()
